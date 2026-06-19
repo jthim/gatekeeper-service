@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Identity Gateway</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 flex min-h-screen items-center justify-center font-sans">
+
+<div class="max-w-md w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
+  <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 mb-4">
+    <svg class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round"
+            d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+    </svg>
+  </div>
+
+  <h1 class="text-2xl font-bold tracking-tight text-white mb-2">
+    Secure Portal Gateway
+  </h1>
+  <p class="text-sm text-slate-400 mb-8">
+    Enterprise Identity Portal
+  </p>
+
+<!--  <a th:href="@{/oauth2/authorization/azure}"-->
+  <a th:href="@{${ssoLoginPath}}"
+     class="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200">
+    <svg class="h-4 w-4 fill-current" viewBox="0 0 23 23">
+      <path d="M0 0h11v11H0zM12 0h11v11H12zM0 12h11v11H0zM12 12h11v11H12z"/>
+    </svg>
+    Sign in with Microsoft Entra ID
+  </a>
+
+  <div class="mt-6 border-t border-slate-700 pt-4">
+            <span class="text-xs text-slate-500 tracking-wider uppercase font-mono">
+                Environment: Protected (v4.1.0)
+            </span>
+  </div>
+</div>
+
+</body>
+</html>
