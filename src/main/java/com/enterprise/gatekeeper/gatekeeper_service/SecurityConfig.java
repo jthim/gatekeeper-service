@@ -8,6 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 
@@ -25,7 +28,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
                         // Allow the general public to view root landing page
@@ -35,8 +38,8 @@ public class SecurityConfig {
                 )
                 // Enable official Microsoft Entra ID OIDC login
                 .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(config -> config
-                                .baseUri(SecurityConstants.SSO_BASE_URI)
+                        .authorizationEndpoint(authorization -> authorization
+                                .authorizationRequestResolver(customAuthorizationRequestResolver(clientRegistrationRepository))
                         )
                         .successHandler(roleBasedSuccessHandler)
                         // 2. OVERRIDE DEFAULT OAUTH FAILURE PAGE TO CUSTOM
@@ -55,5 +58,22 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    // Custom request resolver
+    private OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository){
+
+        DefaultOAuth2AuthorizationRequestResolver resolver =
+                new DefaultOAuth2AuthorizationRequestResolver(
+                        clientRegistrationRepository, "/oauth2/authorization"
+                );
+
+        // Add param to have Microsoft prompt user to select account
+        resolver.setAuthorizationRequestCustomizer(customizer ->
+                customizer.additionalParameters(params -> params.put("prompt", "select_account"))
+        );
+
+        return resolver;
+
     }
 }
