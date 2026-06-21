@@ -5,6 +5,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
@@ -12,27 +13,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class IndexController {
 
     @GetMapping("/")
-    public String showLandingPage(){
+    public String showLandingPage() {
         return "index";
     }
 
     @GetMapping("/dashboard/admin")
     @PreAuthorize("hasAuthority('APPROLE_ROLE_ADMIN')")
-    public String showAdminDashboard() {
+    public String showAdminDashboard(@AuthenticationPrincipal OidcUser principal, Model model) {
+        getUserInfo(principal, model);
         return "admin-dashboard";
     }
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyAuthority('APPROLE_ROLE_ADMIN','APPROLE_ROLE_USER')")
-    public String showDashboard(@AuthenticationPrincipal OidcUser principal) {
-        if (principal != null) {
-            System.out.println("=================== APPSEC AUDIT TRAIL ===================");
-            System.out.println("VERIFIED USER EMAIL : " + principal.getEmail());
-            System.out.println("IDENTITY ISSUER     : " + principal.getIssuer());
-            System.out.println("TOKEN EXPIRES AT    : " + principal.getExpiresAt());
-            System.out.println("CRYPTO CLAIMS BLOB  : " + principal.getClaims());
-            System.out.println("==========================================================");
-        }
+    public String showDashboard(@AuthenticationPrincipal OidcUser principal, Model model) {
+        getUserInfo(principal, model);
         return "dashboard";
+    }
+
+    private void getUserInfo(OidcUser principal, Model model) {
+        model.addAttribute("userFullName", principal.getFullName());
     }
 }
