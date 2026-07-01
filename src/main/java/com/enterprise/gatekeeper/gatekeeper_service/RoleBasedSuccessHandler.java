@@ -9,7 +9,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Collection;
 
 @Component
 public class RoleBasedSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -25,18 +24,13 @@ public class RoleBasedSuccessHandler extends SimpleUrlAuthenticationSuccessHandl
     }
 
     protected String determineTargetUrl(Authentication authentication) {
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        var roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
 
-        // Loop through authorities to find matching roles
-        for (GrantedAuthority grantedAuthority : authorities) {
-            String authority = grantedAuthority.getAuthority();
-            return switch (authority) {
-                case "APPROLE_ROLE_ADMIN" -> "/dashboard/admin";
-                case "APPROLE_ROLE_USER" -> "/dashboard";
-                default -> "UNAUTHORIZED";
-            };
+        if (roles.contains("APPROLE_ROLE_ADMIN")) return "/dashboard/admin";
+        if (roles.contains("APPROLE_ROLE_USER")) return "/dashboard";
 
-        }
         return "UNAUTHORIZED";
     }
 }

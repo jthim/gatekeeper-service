@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.client.web.DefaultOAuth2Authorization
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 import java.io.IOException;
 
@@ -20,16 +21,11 @@ import java.io.IOException;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final RoleBasedSuccessHandler roleBasedSuccessHandler;
-
-    // Use my custom success handler via Dependency Injection
-    public SecurityConfig(RoleBasedSuccessHandler roleBasedSuccessHandler) {
-        this.roleBasedSuccessHandler = roleBasedSuccessHandler;
-    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, RoleBasedSuccessHandler roleBasedSuccessHandler, RateLimitingFilter rateLimitingFilter) throws Exception {
         http
+                .addFilterBefore(rateLimitingFilter, SecurityContextHolderFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         // Allow the general public to view root landing page
                         .requestMatchers("/", "/error").permitAll()
@@ -42,7 +38,7 @@ public class SecurityConfig {
                                 .authorizationRequestResolver(customAuthorizationRequestResolver(clientRegistrationRepository))
                         )
                         .successHandler(roleBasedSuccessHandler)
-                        // 2. OVERRIDE DEFAULT OAUTH FAILURE PAGE TO CUSTOM
+                        // 2. Override default Oauth error page to custom one
                         .failureHandler(new AuthenticationFailureHandler() {
                             @Override
                             public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
@@ -61,7 +57,7 @@ public class SecurityConfig {
     }
 
     // Custom request resolver
-    private OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository){
+    private OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver(ClientRegistrationRepository clientRegistrationRepository) {
 
         DefaultOAuth2AuthorizationRequestResolver resolver =
                 new DefaultOAuth2AuthorizationRequestResolver(
