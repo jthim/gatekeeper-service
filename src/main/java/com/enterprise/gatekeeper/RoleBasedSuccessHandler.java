@@ -1,4 +1,4 @@
-package com.enterprise.gatekeeper.gatekeeper_service;
+package com.enterprise.gatekeeper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

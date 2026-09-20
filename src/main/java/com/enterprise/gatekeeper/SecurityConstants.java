@@ -1,4 +1,4 @@
-package com.enterprise.gatekeeper.gatekeeper_service;
+package com.enterprise.gatekeeper;
 
 public final class SecurityConstants {
     public static final String SSO_BASE_URI = "/login/sso";

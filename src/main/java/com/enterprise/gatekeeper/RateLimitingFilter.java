@@ -1,4 +1,4 @@
-package com.enterprise.gatekeeper.gatekeeper_service;
+package com.enterprise.gatekeeper;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

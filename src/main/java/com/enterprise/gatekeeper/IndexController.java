@@ -1,4 +1,4 @@
-package com.enterprise.gatekeeper.gatekeeper_service;
+package com.enterprise.gatekeeper;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

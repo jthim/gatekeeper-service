@@ -1,4 +1,4 @@
-package com.enterprise.gatekeeper.gatekeeper_service;
+package com.enterprise.gatekeeper;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
