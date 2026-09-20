@@ -58,7 +58,7 @@ class RoleBasedSuccessHandlerTest {
     }
 
     @Test
-    @DisplayName("Should redirect to UNAUTHORIZED endpoint when role is not recognized")
+    @DisplayName("Should redirect to the error page when role is not recognized")
     void handleUnmappedRole() throws Exception {
         var unknownAuthority = new SimpleGrantedAuthority("APPROLE_ROLE_INVALID");
         doReturn(List.of(unknownAuthority)).when(authentication).getAuthorities();
@@ -66,7 +66,7 @@ class RoleBasedSuccessHandlerTest {
 
         successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        verify(redirectStrategy).sendRedirect(request, response, "UNAUTHORIZED");
+        verify(redirectStrategy).sendRedirect(request, response, "/error");
     }
-    
+
 }
