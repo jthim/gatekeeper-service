@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -21,6 +23,7 @@ import java.io.IOException;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, RoleBasedSuccessHandler roleBasedSuccessHandler, RateLimitingFilter rateLimitingFilter) throws Exception {
@@ -38,12 +41,23 @@ public class SecurityConfig {
                                 .authorizationRequestResolver(customAuthorizationRequestResolver(clientRegistrationRepository))
                         )
                         .successHandler(roleBasedSuccessHandler)
-                        // 2. Override default Oauth error page to custom one
-                        .failureHandler(new AuthenticationFailureHandler() {
-                            @Override
-                            public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-                                request.getRequestDispatcher("/error").forward(request, response);
-                            }
+                        // 2. Override default Oauth error page to custom one, and log the failure
+                        // so failed-login attempts show up in the audit trail.
+                        .failureHandler((request, response, exception) -> {
+                            logger.warn("[SECURITY] OAuth2 login failed from IP {}: {}",
+                                    request.getRemoteAddr(), exception.getMessage());
+                            request.getRequestDispatcher("/error").forward(request, response);
+                        })
+                )
+                // Log and hand off any 403 (authenticated, but not permitted) to /error too,
+                // e.g. a USER-role account trying to reach /dashboard/admin directly.
+                .exceptionHandling(exceptions -> exceptions
+                        .accessDeniedHandler((request, response, exception) -> {
+                            var principal = request.getUserPrincipal();
+                            logger.warn("[SECURITY] Access denied for user '{}' to {} from IP {}",
+                                    principal != null ? principal.getName() : "unknown",
+                                    request.getRequestURI(), request.getRemoteAddr());
+                            request.getRequestDispatcher("/error").forward(request, response);
                         })
                 )
                 .logout(logout -> logout
