@@ -1,23 +1,16 @@
 package com.enterprise.gatekeeper.gatekeeper_service;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +19,7 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, RoleBasedSuccessHandler roleBasedSuccessHandler, RateLimitingFilter rateLimitingFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository, RoleBasedSuccessHandler roleBasedSuccessHandler, RateLimitingFilter rateLimitingFilter) {
         http
                 .addFilterBefore(rateLimitingFilter, SecurityContextHolderFilter.class)
                 .authorizeHttpRequests(auth -> auth
@@ -52,7 +45,7 @@ public class SecurityConfig {
                 // Log and hand off any 403 (authenticated, but not permitted) to /error too,
                 // e.g. a USER-role account trying to reach /dashboard/admin directly.
                 .exceptionHandling(exceptions -> exceptions
-                        .accessDeniedHandler((request, response, exception) -> {
+                        .accessDeniedHandler((request, response, _) -> {
                             var principal = request.getUserPrincipal();
                             logger.warn("[SECURITY] Access denied for user '{}' to {} from IP {}",
                                     principal != null ? principal.getName() : "unknown",
