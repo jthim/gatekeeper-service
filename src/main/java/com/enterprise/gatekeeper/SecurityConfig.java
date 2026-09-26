@@ -24,9 +24,25 @@ public class SecurityConfig {
                 .addFilterBefore(rateLimitingFilter, SecurityContextHolderFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         // Allow the general public to view root landing page
-                        .requestMatchers("/", "/error").permitAll()
+                        .requestMatchers("/", "/error", "/csp-violation-report").permitAll()
                         // Keep all other future endpoints securely locked down
                         .anyRequest().authenticated()
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/csp-violation-report"))
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives(
+                                        "default-src 'self'; " +
+                                                "script-src 'self' https://cdn.jsdelivr.net; " +
+                                                "style-src 'self' 'unsafe-inline'; " +
+                                                "object-src 'none'; " +
+                                                "base-uri 'self'; " +
+                                                "form-action 'self'; " +
+                                                "frame-ancestors 'none'; " +
+                                                "report-uri /csp-violation-report;"
+                                )
+                                .reportOnly()
+                        )
                 )
                 // Enable official Microsoft Entra ID OIDC login
                 .oauth2Login(oauth2 -> oauth2

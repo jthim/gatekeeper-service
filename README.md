@@ -26,6 +26,12 @@ rather than assumed.
   carry CSRF tokens automatically via `thymeleaf-extras-springsecurity6`.
 - **Supply-chain-conscious front end** — the CDN-loaded Tailwind script is pinned to an exact version with a Subresource
   Integrity (SRI) hash, so a compromised or altered CDN file is rejected by the browser instead of silently executed.
+- **Content-Security-Policy, currently set to report-only to observe** — a CSP restricting script/style sources,
+  disallowing
+  plugins, and locking down `form-action`/`base-uri`/`frame-ancestors` (defense-in-depth against injected content even
+  where the app has no current known XSS) using `Content-Security-Policy-Report-Only`. Violations are sent
+  to `CspReportController` and logged into the same audit trail as auth failures and access denials, rather than to a
+  third-party service. See Known Limitations for the plan to move this to enforcing.
 - **No secrets in source control** — Azure credentials are pulled from environment variables (`AZURE_TENANT_ID`,
   `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`); `application.properties` is gitignored, and
   `example.application.properties` documents the required shape without real values.
@@ -89,8 +95,10 @@ Being upfront about trade-offs made for a portfolio-scope project:
   balancer would multiply the effective limit. A production deployment would move this to a shared store (e.g. Redis).
 - **`app.trusted-proxies` must be configured for your actual deployment target** before going to production — it
   defaults to `localhost` for local development only. See `example.application.properties`.
-- **No explicit Content-Security-Policy header yet** — Spring Security's header defaults apply, but an explicit CSP is a
-  planned addition.
+- **CSP is deployed in report-only mode, not yet enforcing.** `Content-Security-Policy-Report-Only` logs what would be
+  blocked without actually blocking it — the deliberate first step before enforcing, so a misconfigured policy doesn't
+  break the app for real users. Once violation reports come back clean across normal usage, the next step is dropping
+  `.reportOnly()` in `SecurityConfig` to make the policy enforcing.
 
 ## License
 
