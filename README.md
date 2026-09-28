@@ -12,8 +12,8 @@ rather than assumed.
 - **OIDC login via Microsoft Entra ID** — Login, token validation, and session
   establishment are delegated entirely to Spring Security's OAuth2/OIDC client and Microsoft's identity platform.
 - **Role-based access control, enforced at the method level** — `@PreAuthorize` on each protected endpoint (
-  `IndexController`) checks the caller's Entra ID app role before the method body ever runs, not just at the URL-routing
-  layer.
+  `IndexController`) checks the caller's Entra ID app role before the method body ever runs. The filter chain
+  separately requires login for everything except `/` and `/error`.
 - **Proxy-aware rate limiting** — a token-bucket limiter (`RateLimitingFilter`, via bucket4j) throttles requests per
   client IP. Client IP resolution only trusts the `X-Forwarded-For` header when the direct connection comes from a
   configured, trusted proxy IP (`app.trusted-proxies`) — preventing IP spoofing via a forged header, and avoiding the
